@@ -88,6 +88,8 @@ services:
   stedi_db:
     image: postgres
     restart: always
+    ports:
+      - "8001:5432"
     environment:
       POSTGRES_USER: stedi 
       POSTGRES_PASSWORD: password
