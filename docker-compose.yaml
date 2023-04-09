@@ -72,6 +72,7 @@ services:
       POSTGRES_USER: stedi 
       POSTGRES_PASSWORD: password
       POSTGRES_DB: stedi_analytics
+      POSTGRES_HOST_AUTH_METHOD: trust
 
 
   postgres:
