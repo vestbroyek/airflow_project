@@ -1,14 +1,11 @@
 from datetime import datetime, timedelta
-import os
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 import pandas as pd
-
-# AWS_KEY = os.environ.get('AWS_KEY')
-# AWS_SECRET = os.environ.get('AWS_SECRET')
+import pendulum 
 
 default_args = {
     'owner': 'airflow',
@@ -16,7 +13,7 @@ default_args = {
     'retries': 0,
     'retry_delay': timedelta(minutes=5),
     'email_on_retry': False,
-    'start_date': datetime(2023, 4, 9)
+    'start_date': datetime(2018,11,1)
 }
 
 dag = DAG('prod_dag',
@@ -26,18 +23,22 @@ dag = DAG('prod_dag',
           schedule_interval='0 * * * *'
         )
 
-start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
+start_operator = DummyOperator(task_id='begin_execution', dag=dag)
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='stage_events',
-    dag=dag,
-    key='log-data/2018-11-01-events.json',
+    folder='log-data/',
+    filename='2018-11-10-events.json',
+    date_field=False,
+    if_exists='append',
     target_table='staging_events',
+    dag=dag
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='stage_songs',
-    key='song-data/TRAAAAK128F9318786.json',
+    folder='song-data/',
+    filename='TRAAAAK128F9318786.json',
     target_table='staging_songs',
     dag=dag
 )
@@ -87,7 +88,7 @@ run_quality_checks = DataQualityOperator(
     dag=dag
 )
 
-end_operator = DummyOperator(task_id='stop_execution',  dag=dag)
+end_operator = DummyOperator(task_id='stop_execution', dag=dag)
 
 # dependencies
 start_operator >> (stage_events_to_redshift, stage_songs_to_redshift) >> load_songplays_table >> (load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table) >> run_quality_checks >> end_operator

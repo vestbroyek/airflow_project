@@ -14,7 +14,8 @@ class StageToRedshiftOperator(BaseOperator):
                  postgres_conn_id="postgres",
                  aws_conn_id="aws",
                  bucket="maurits-westbroek",
-                 key="",
+                 folder="",
+                 filename="",
                  target_table="",
                  target_schema="public",
                  date_field=False,
@@ -25,7 +26,8 @@ class StageToRedshiftOperator(BaseOperator):
         self.postgres_conn_id=postgres_conn_id
         self.aws_conn_id=aws_conn_id
         self.bucket=bucket
-        self.key=key
+        self.folder=folder 
+        self.filename=filename
         self.target_table=target_table
         self.target_schema=target_schema
         self.date_field=date_field
@@ -37,17 +39,17 @@ class StageToRedshiftOperator(BaseOperator):
 
         # If date_field=True, make the key dynamic to logical execution date
         if self.date_field:
-            self.log.info(f"Attempting to stage {context['ds']+self.key}")
+            self.log.info(f"Attempting to stage {self.folder+context['ds']+self.filename}")
             obj=s3hook.get_conn().get_object(
                 Bucket=self.bucket,
-                Key=context['ds']+self.key
+                Key=self.folder+context['ds']+self.filename
             )
 
         else:
-            self.log.info(f"Attempting to stage {self.key}")
+            self.log.info(f"Attempting to stage {self.folder+self.filename}")
             obj=s3hook.get_conn().get_object(
                 Bucket=self.bucket,
-                Key=self.key
+                Key=self.folder+self.filename
             )
         
         # turn into df
