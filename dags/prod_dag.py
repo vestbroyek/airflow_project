@@ -81,14 +81,13 @@ load_time_dimension_table = LoadDimensionOperator(
     dag=dag
 )
 
-start_operator >> (stage_events_to_redshift, stage_songs_to_redshift) >> load_songplays_table >> (load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table) # >> run_quality_checks >> end_operator
+run_quality_checks = DataQualityOperator(
+    task_id='run_data_quality_checks',
+    tables=["songplays"],
+    dag=dag
+)
 
-# run_quality_checks = DataQualityOperator(
-#     task_id='run_data_quality_checks',
-#     dag=dag
-# )
-
-# end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
+end_operator = DummyOperator(task_id='stop_execution',  dag=dag)
 
 # dependencies
-# start_operator >> (stage_events_to_redshift, stage_songs_to_redshift) >> load_songplays_table >> (load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table) >> run_quality_checks >> end_operator
+start_operator >> (stage_events_to_redshift, stage_songs_to_redshift) >> load_songplays_table >> (load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table) >> run_quality_checks >> end_operator

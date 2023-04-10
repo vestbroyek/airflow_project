@@ -8,15 +8,25 @@ class DataQualityOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # conn_id = your-connection-name
-                 *args, **kwargs):
+                postgres_conn_id="postgres",
+                tables=[],
+                type='has_rows',
+                *args, **kwargs):
 
         super(DataQualityOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.postgres_conn_id=postgres_conn_id
+        self.tables=tables 
+        self.type=type
 
     def execute(self, context):
-        self.log.info('DataQualityOperator not implemented yet')
+        postgres_hook=PostgresHook(self.postgres_conn_id)
+
+        if self.type=="has_rows":
+            self.log.info(f"Checking whether {self.tables} have rows...")
+            for table in self.tables:
+                result=postgres_hook.get_records(f"""select count(*) from {table}""")
+                if result==0:
+                    self.log.info(f"Data quality check for {table} failed!")
+                    raise ValueError 
+                else:
+                    self.log.info(f"Data quality check for {table} passed!")
