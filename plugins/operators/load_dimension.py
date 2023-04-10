@@ -2,6 +2,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 # from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.utils.decorators import apply_defaults
+from psycopg2.errors import UniqueViolation
 
 class LoadDimensionOperator(BaseOperator):
 
@@ -34,4 +35,7 @@ class LoadDimensionOperator(BaseOperator):
         else:
             with postgres_hook.get_conn() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(f"""insert into {self.target_table} ({self.query})""")
+                    try:
+                        cursor.execute(f"""insert into {self.target_table} ({self.query})""")
+                    except UniqueViolation as e:
+                        self.log.info(e)

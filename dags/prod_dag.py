@@ -53,35 +53,35 @@ load_user_dimension_table = LoadDimensionOperator(
     task_id='load_user_dim_table',
     target_table="users",
     query=SqlQueries.user_table_insert,
-    truncate=False,
+    truncate=True,
     dag=dag
 )
 
-start_operator >> (stage_events_to_redshift, stage_songs_to_redshift) >> load_songplays_table >> (load_user_dimension_table) # >> run_quality_checks >> end_operator
+load_song_dimension_table = LoadDimensionOperator(
+    task_id='load_song_dim_table',
+    target_table="songs",
+    query=SqlQueries.song_table_insert,
+    truncate=True,
+    dag=dag
+)
 
-# load_song_dimension_table = LoadDimensionOperator(
-#     task_id='load_song_dim_table',
-#     target_table="songs",
-#     query=SqlQueries.song_table_insert,
-#     truncate=True,
-#     dag=dag
-# )
+load_artist_dimension_table = LoadDimensionOperator(
+    task_id='load_artist_dim_table',
+    target_table="artists",
+    query=SqlQueries.artist_table_insert,
+    truncate=True,
+    dag=dag
+)
 
-# load_artist_dimension_table = LoadDimensionOperator(
-#     task_id='load_artist_dim_table',
-#     target_table="artists",
-#     query=SqlQueries.artist_table_insert,
-#     truncate=True,
-#     dag=dag
-# )
+load_time_dimension_table = LoadDimensionOperator(
+    task_id='load_time_dim_table',
+    target_table="time",
+    query=SqlQueries.time_table_insert,
+    truncate=True,
+    dag=dag
+)
 
-# load_time_dimension_table = LoadDimensionOperator(
-#     task_id='load_time_dim_table',
-#     target_table="time",
-#     query=SqlQueries.time_table_insert,
-#     truncate=True,
-#     dag=dag
-# )
+start_operator >> (stage_events_to_redshift, stage_songs_to_redshift) >> load_songplays_table >> (load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table) # >> run_quality_checks >> end_operator
 
 # run_quality_checks = DataQualityOperator(
 #     task_id='run_data_quality_checks',

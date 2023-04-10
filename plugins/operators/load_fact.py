@@ -25,7 +25,6 @@ class LoadFactOperator(BaseOperator):
             with conn.cursor() as cursor:
                 # For fact table, insert
                 try:
-                    cursor.execute(f"""
-                    insert into {self.target_table} ({self.query})""")
+                    cursor.execute(f"""insert into {self.target_table} ({self.query})""")
                 except UniqueViolation as e:
                     self.log.info(e)
