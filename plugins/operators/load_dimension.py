@@ -1,5 +1,6 @@
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
+# from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.utils.decorators import apply_defaults
 
 class LoadDimensionOperator(BaseOperator):
@@ -8,15 +9,29 @@ class LoadDimensionOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # conn_id = your-connection-name
-                 *args, **kwargs):
+                postgres_conn_id="postgres",
+                query="",
+                target_table="",
+                truncate=True,
+                *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.postgres_conn_id=postgres_conn_id
+        self.query=query
+        self.target_table=target_table
+        self.truncate=truncate
 
     def execute(self, context):
-        self.log.info('LoadDimensionOperator not implemented yet')
+
+        postgres_hook=PostgresHook(self.postgres_conn_id)
+
+        if self.truncate:
+            with postgres_hook.get_conn() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(f"""truncate {self.target_table};""")
+                    cursor.execute(f"""insert into {self.target_table} ({self.query})""")
+
+        else:
+            with postgres_hook.get_conn() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(f"""insert into {self.target_table} ({self.query})""")
