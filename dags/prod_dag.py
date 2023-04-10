@@ -10,7 +10,7 @@ import pendulum
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'retries': 0,
+    'retries': 3,
     'retry_delay': timedelta(minutes=5),
     'email_on_retry': False,
     'start_date': datetime(2018,11,1)
