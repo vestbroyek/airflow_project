@@ -8,6 +8,8 @@ The source data resides in S3 and needs to be processed in Sparkify's data wareh
 # Set up 
 To create a free and reproducible development environment, we'll create a Dockerised Airflow deployment that also has an additional Postgres database (to mimic Redshift) to run queries on. 
 
+However, we'll also write the code to run in Redshift. For this, we'll create a new IAM user and a service role and save their credentials in Airflow. We'll also create a Redshift Serverless cluster. We'll call the AWS connection `aws-redshift`. We'll call the Redshift connection `redshift`. This way, we have both Redshift-specific `COPY` syntax and a Postgres version. 
+
 We'll use the default `docker-compose.yaml` from the Airflow website. We add another Postgres database to it and map our local machine's port 8001 to its 5432 (the default Postgres port). This means we can access our Postgres database at `localhost:8001`. 
 
 We use `docker compose up -d` to bring up our Airflow + target database.
