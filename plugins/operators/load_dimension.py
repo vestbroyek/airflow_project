@@ -31,7 +31,7 @@ class LoadDimensionOperator(BaseOperator):
         if self.use_redshift:
 
             redshift_hook = PostgresHook(self.redshift_conn_id)
-
+            self.log.info(f"Loading into {self.target_table}...")
             if self.truncate:
                 redshift_hook.run(f"""truncate {self.target_table};""")
                 redshift_hook.run(f"""insert into {self.target_table} ({self.query})""")
@@ -42,7 +42,7 @@ class LoadDimensionOperator(BaseOperator):
         if not self.use_redshift:
 
             postgres_hook=PostgresHook(self.postgres_conn_id)
-
+            self.log.info(f"Loading into {self.target_table}...")
             if self.truncate:
                 with postgres_hook.get_conn() as conn:
                     with conn.cursor() as cursor:

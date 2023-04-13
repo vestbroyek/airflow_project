@@ -26,13 +26,14 @@ class LoadFactOperator(BaseOperator):
     def execute(self, context):
 
         if self.use_redshift:
-
+            self.log.info(f"Loading into {self.target_table}...")
             redshift_hook = PostgresHook(self.redshift_conn_id)
             redshift_hook.run(f"""insert into {self.target_table} ({self.query})""")
 
         if not self.use_redshift:
 
             postgres_hook=PostgresHook(self.postgres_conn_id)
+            self.log.info(f"Loading into {self.target_table}...")
             with postgres_hook.get_conn() as conn:
                 with conn.cursor() as cursor:
                     # For fact table, insert

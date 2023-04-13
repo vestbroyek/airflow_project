@@ -42,10 +42,12 @@ class StageToRedshiftOperator(BaseOperator):
         if self.use_redshift and not self.date_field:
 
             redshift_hook = PostgresHook(self.redshift_conn_id)
+            self.log.info(f"Staging {self.target_table} from {self.bucket}/{self.folder}/{self.filename}...")
             redshift_hook.run(f"""
                 copy {self.target_table}
                 from 's3://{self.bucket}/{self.folder}/{self.filename}' 
                 iam_role 'arn:aws:iam::173217485177:role/my-redshift-service-role'
+                region 'us-east-1'
                 format as json 'auto';
             """)
 
@@ -53,10 +55,12 @@ class StageToRedshiftOperator(BaseOperator):
         if self.use_redshift and self.date_field:
 
             redshift_hook = PostgresHook(self.redshift_conn_id)
+            self.log.info(f"Staging {self.target_table} from {self.bucket}/{self.folder}/{self.filename}...")
             redshift_hook.run(f"""
                 copy {self.target_table}
                 from 's3://{self.bucket}/{self.folder}/{context['ds']}+{self.filename}' 
                 iam_role 'arn:aws:iam::173217485177:role/my-redshift-service-role'
+                region 'us-east-1'
                 format as json 'auto';
             """) 
 
