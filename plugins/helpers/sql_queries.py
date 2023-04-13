@@ -1,16 +1,16 @@
 class SqlQueries:
     songplay_table_insert = ("""
         SELECT
-                md5(events.ts::varchar) songplay_id,
+                coalesce(md5(events.sessionid), md5(events.start_time)) songplay_id,
                 events.start_time, 
-                events."userId", 
+                coalesce(events.userid, 9999), 
                 events.level, 
                 songs.song_id, 
                 songs.artist_id, 
-                events."sessionId", 
+                events.sessionid, 
                 events.location, 
-                events."userAgent"
-                FROM (select to_timestamp(ts/1000) as start_time, *
+                events.useragent
+                FROM (SELECT TIMESTAMP 'epoch' + ts/1000 * interval '1 second' AS start_time, *
             FROM staging_events
             WHERE page='NextSong') events
             LEFT JOIN staging_songs songs
@@ -23,6 +23,7 @@ class SqlQueries:
         SELECT distinct "userId", "firstName", "lastName", gender, level
         FROM staging_events
         WHERE page='NextSong'
+        AND "userId" is not null
     """)
 
     song_table_insert = ("""
