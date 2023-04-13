@@ -11,31 +11,48 @@ class LoadDimensionOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                 postgres_conn_id="postgres",
+                redshift_conn_id="redshift",
                 query="",
                 target_table="",
                 truncate=True,
+                use_redshift=True,
                 *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
         self.postgres_conn_id=postgres_conn_id
+        self.redshift_conn_id=redshift_conn_id
         self.query=query
         self.target_table=target_table
         self.truncate=truncate
+        self.use_redshift=use_redshift
 
     def execute(self, context):
 
-        postgres_hook=PostgresHook(self.postgres_conn_id)
+        if self.use_redshift:
 
-        if self.truncate:
-            with postgres_hook.get_conn() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(f"""truncate {self.target_table};""")
-                    cursor.execute(f"""insert into {self.target_table} ({self.query})""")
+            redshift_hook = PostgresHook(self.redshift_conn_id)
 
-        else:
-            with postgres_hook.get_conn() as conn:
-                with conn.cursor() as cursor:
-                    try:
+            if self.truncate:
+                redshift_hook.run(f"""truncate {self.target_table};""")
+                redshift_hook.run(f"""insert into {self.target_table} ({self.query})""")
+
+            else:
+                redshift_hook.run(f"""insert into {self.target_table} ({self.query})""")
+
+        if not self.use_redshift:
+
+            postgres_hook=PostgresHook(self.postgres_conn_id)
+
+            if self.truncate:
+                with postgres_hook.get_conn() as conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute(f"""truncate {self.target_table};""")
                         cursor.execute(f"""insert into {self.target_table} ({self.query})""")
-                    except UniqueViolation as e:
-                        self.log.info(e)
+
+            else:
+                with postgres_hook.get_conn() as conn:
+                    with conn.cursor() as cursor:
+                        try:
+                            cursor.execute(f"""insert into {self.target_table} ({self.query})""")
+                        except UniqueViolation as e:
+                            self.log.info(e)

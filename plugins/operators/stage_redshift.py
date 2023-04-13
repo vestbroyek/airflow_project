@@ -13,7 +13,7 @@ class StageToRedshiftOperator(BaseOperator):
     def __init__(self,
                 postgres_conn_id="postgres",
                 redshift_conn_id="redshift",
-                aws_conn_id="aws",
+                aws_conn_id="aws-redshift",
                 bucket="maurits-westbroek-airflow",
                 folder="",
                 filename="",
