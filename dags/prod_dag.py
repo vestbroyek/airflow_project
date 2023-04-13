@@ -27,17 +27,16 @@ start_operator = DummyOperator(task_id='begin_execution', dag=dag)
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='stage_events',
-    folder='log-data/',
-    filename='2018-11-10-events.json',
+    folder='log-data',
+    filename='2018-11-11-events.json',
     date_field=False,
-    if_exists='append',
     target_table='staging_events',
     dag=dag
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='stage_songs',
-    folder='song-data/',
+    folder='song-data',
     filename='TRAAAAK128F9318786.json',
     target_table='staging_songs',
     dag=dag
